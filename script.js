@@ -2,13 +2,13 @@
   "use strict";
 
   // ------- Configuration -------
-  const SERVICE_NAME = "Jawline Sculpting Treatment";
+  const SERVICE_NAME = "Bye Bye Eye Bags";
   const SERVICE_DURATION_MIN = 60;
 
   // GHL credentials
   const GHL = {
     locationId: 'Q42RHUR6LefBwNRdGXFR',
-    calendarId: 'HD8QyUgqKfiLBxTxvqjH',
+    calendarId: 'FgAbVQzMr9hFaohTIr6u',
     userId:     'xAMtGZMrz3cYyCCLxJiL',
     apiKey:     'pit-ccedc24a-6e84-49d7-b0ad-54c11d8333be',
     apiBase:    'https://services.leadconnectorhq.com',
@@ -285,8 +285,8 @@
         lastName: lastName || '-',
         email,
         phone,
-        source: 'Luminous skin tech SA - Jawline Sculpting Treatment',
-        tags: ['Jawline Sculpting Treatment'],
+        source: 'Luminous skin tech SA - Bye Bye Eye Bags',
+        tags: ['Bye Bye Eye Bags'],
       });
       const contactId = contactRes.contact?.id || contactRes.id;
 
@@ -299,7 +299,7 @@
         assignedUserId: GHL.userId,
         startTime:      isoInTz(start, BUSINESS_TZ),
         endTime:        isoInTz(end,   BUSINESS_TZ),
-        title:          `${name} — Jawline Sculpting Treatment`,
+        title:          `${name} — Bye Bye Eye Bags`,
         selectedTimezone: BUSINESS_TZ,
       });
 
