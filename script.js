@@ -4,6 +4,7 @@
   // ------- Configuration -------
   const SERVICE_NAME = "Saggy Neck Double Lift Skin Tightening Treatment";
   const SERVICE_DURATION_MIN = 60;
+  const DEDICATED_PIXEL_ID = '1404713691408780';
 
   // GHL credentials
   const GHL = {
@@ -20,8 +21,6 @@
   // Build specific time slots
   function buildAllSlots() {
     return [
-      { label: '8:00 AM',  hour: 8,  minute: 0 },
-      { label: '9:00 AM',  hour: 9,  minute: 0 },
       { label: '10:00 AM', hour: 10, minute: 0 },
       { label: '11:00 AM', hour: 11, minute: 0 },
       { label: '12:00 PM', hour: 12, minute: 0 },
@@ -29,6 +28,7 @@
       { label: '2:00 PM',  hour: 14, minute: 0 },
       { label: '3:00 PM',  hour: 15, minute: 0 },
       { label: '4:00 PM',  hour: 16, minute: 0 },
+      { label: '5:00 PM',  hour: 17, minute: 0 },
     ];
   }
   let ALL_SLOTS = buildAllSlots();
@@ -125,8 +125,10 @@
 
     const cells = [];
     const cursor = new Date(today);
-    for (let i = 0; i < 6; i++) {
-      cells.push(new Date(cursor));
+    while (cells.length < 5) {
+      if (cursor.getDay() !== 6) {
+        cells.push(new Date(cursor));
+      }
       cursor.setDate(cursor.getDate() + 1);
     }
 
@@ -168,7 +170,7 @@
     }
 
     // Morning block (8 AM - 11 AM)
-    const morning = ALL_SLOTS.filter(s => s.hour >= 8 && s.hour <= 11);
+    const morning = ALL_SLOTS.filter(s => s.hour >= 10 && s.hour <= 11);
     const morningAvail = filterPast(morning);
     morningGrid.innerHTML = "";
     if (morningAvail.length > 0) {
@@ -224,9 +226,24 @@
 
   function track(event, params) {
     if (typeof window.fbq === "function") {
-      try { window.fbq("track", event, params || {}); } catch (_) {}
+      try { window.fbq("trackSingle", "1178133073434960", event, params || {}); } catch (_) {}
     }
   }
+  function trackDedicated(event, params, eventId) {
+    if (typeof window.fbq === "function" && DEDICATED_PIXEL_ID) {
+      try {
+        var opts = eventId ? { eventID: eventId } : {};
+        window.fbq("trackSingle", DEDICATED_PIXEL_ID, event, params || {}, opts);
+      } catch (_) {}
+    }
+  }
+
+  // ------- Fire ViewContent to dedicated pixel once ---
+  (function() {
+    if (typeof window.fbq === "function" && DEDICATED_PIXEL_ID) {
+      try { window.fbq("trackSingle", DEDICATED_PIXEL_ID, "ViewContent", { content_name: SERVICE_NAME }); } catch (_) {}
+    }
+  })();
 
   // ------- Back buttons -------
   document.querySelectorAll(".back-btn").forEach((btn) => {
@@ -269,6 +286,8 @@
     btnLabel.textContent = "Booking";
     spinner.classList.remove("hidden");
 
+    const eventId = "sch_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10);
+
     const start = dateFromWallTime(
       selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(),
       selectedTime.hour, selectedTime.minute, BUSINESS_TZ,
@@ -305,6 +324,20 @@
 
       track("Lead", { content_name: SERVICE_NAME });
       track("Schedule", { content_name: SERVICE_NAME });
+      trackDedicated("Schedule", { content_name: SERVICE_NAME }, eventId);
+      try {
+        fetch('/api/capi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId, email, phone,
+            eventSourceUrl: window.location.href,
+            contentName: SERVICE_NAME,
+            fbp: (document.cookie.match(/_fbp=([^;]+)/) || [])[1],
+            fbc: (document.cookie.match(/_fbc=([^;]+)/) || [])[1],
+          }),
+        }).catch(function(){});
+      } catch(_) {}
 
       renderConfirmation({
         service: SERVICE_NAME,
